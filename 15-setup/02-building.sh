@@ -15,4 +15,16 @@ if [ "$?" -gt "0" ]; then
 
 fi
 
+cd $SAVE_WORKDIR
+
+. $SEVPN_LOCAL_VPN_ENV_TMP
+
+echo
+echo Change Permissions
+echo
+
+chmod 600 $SEVPN_LOCAL_EXTRACT_TMP/*
+chmod 700 $SEVPN_LOCAL_EXTRACT_TMP/vpnserver
+chmod 700 $SEVPN_LOCAL_EXTRACT_TMP/vpncmd
+
 

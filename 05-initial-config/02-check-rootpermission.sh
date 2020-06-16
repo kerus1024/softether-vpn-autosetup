@@ -11,5 +11,8 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 echo "[Check Root] root 권한 확인 종료"
+
+mkdir ./tmp > /dev/null 2>&1
+
 echo
 

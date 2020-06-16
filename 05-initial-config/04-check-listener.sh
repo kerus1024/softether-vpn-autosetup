@@ -51,6 +51,18 @@ function check_listener() {
     exit 1
   fi
 
+
+  u67=`netstat -nl4u | grep ":67 " 2>&1 | wc -l`
+  if [ "$u67" -gt "0" ]; then
+    echo
+    echo
+    echo "${Red} UDP 67 (DHCP) 포트를 사용하는 프로세스가 있습니다. ${Color_Off}"
+    echo
+    echo
+    exit 1
+  fi
+
+
 }
 
 check_listener

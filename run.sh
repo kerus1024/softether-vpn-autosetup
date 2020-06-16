@@ -27,7 +27,8 @@
 echo
 echo
 echo
-echo SoftEther VPN Auto Setup
+echo "SoftEther VPN Auto Setup"
+echo "          author: Kerus Ashe < https://github.com/kerus1024/softether-vpn-autosetup >"
 echo 
 echo
 echo
