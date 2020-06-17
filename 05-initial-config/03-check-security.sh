@@ -23,8 +23,11 @@ function check_selinux() {
       /sbin/setenforce 0
 
       sestatus=`/sbin/getenforce`
-
-      sed 's/SELINUX=enforcing/SELINUX=disabled/' $SELINUXCONFPATH > $SELINUXCONFPATH
+      selinuxconftmp="./tmp/selinux_origin"
+ 
+      sed 's/SELINUX=enforcing/SELINUX=disabled/' $SELINUXCONFPATH > $selinuxconftmp
+     
+      cat > $SELINUXCONFPATH < $selinuxconftmp
 
       if [ "$sestatus" != "Permissive" ]; then
         echo -e "${Red}오류. SELinux를 비활성화하지 못했습니다.${Color_Off}"
