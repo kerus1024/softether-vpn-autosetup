@@ -1,7 +1,7 @@
 #!/bin/bash
 SAVE_WORKDIR=`pwd`
 
-cd $SEVPN_LOCAL_EXTRACT_TMP
+cd $SEVPN_LOCAL_EXTRACT_TMP/
 make
 
 if [ "$?" -gt "0" ]; then

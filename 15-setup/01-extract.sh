@@ -1,5 +1,5 @@
 #!/bin/bash
-SEVPN_LOCAL_EXTRACT_TMP="./tmp/sevpn_files/"
+SEVPN_LOCAL_EXTRACT_TMP="./tmp/sevpn_files"
 
 if [[ -s $SEVPN_LOCAL_BIN_TEMP ]]; then
 
@@ -9,7 +9,7 @@ if [[ -s $SEVPN_LOCAL_BIN_TEMP ]]; then
 
   mkdir -p $SEVPN_LOCAL_EXTRACT_TMP
 
-  tar xzvf $SEVPN_LOCAL_BIN_TEMP --strip 1 -C $SEVPN_LOCAL_EXTRACT_TMP
+  tar xzvf $SEVPN_LOCAL_BIN_TEMP --strip 1 -C $SEVPN_LOCAL_EXTRACT_TMP/
 
   echo "압축을 해제했습니다."
 

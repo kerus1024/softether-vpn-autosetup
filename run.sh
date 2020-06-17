@@ -33,6 +33,9 @@ echo
 echo
 echo
 
+# WoW
+# for i in `find ./ -maxdepth 2 -name "*.sh" -not -path "./run.sh" | sort `; do . $i; done
+
 . ./05-initial-config/01-check-environment.sh
 . ./05-initial-config/02-check-rootpermission.sh
 . ./05-initial-config/03-check-security.sh
@@ -43,7 +46,10 @@ echo
 . ./15-setup/00-get.sh
 . ./15-setup/01-extract.sh
 . ./15-setup/02-building.sh
-#. ./15-setup/03-
-
+. ./15-setup/03-installing-sevpn.sh
+. ./15-setup/04-sevpn-settings.sh
+. ./15-setup/05-service-run.sh
+. ./15-setup/06-setup-dhcpd.sh
+. ./15-setup/10-final.sh
 
 exit 0
