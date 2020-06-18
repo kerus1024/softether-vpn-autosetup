@@ -13,6 +13,22 @@ echo "[Check Environment] 운영체제 확인"
 
 ######################################################
 
+function check_CentOS8_x86_64() {
+
+  TRY0001=`cat /etc/redhat-release | awk '{print $1}'`
+  TRY0002=`cat /etc/redhat-release | awk '{print $4}' | cut -b 1`
+
+  if [ "$TRY0001" = "CentOS" ] && [ "$TRY0002" = "8" ] && [ "$ARCH" = "x86_64" ]; then
+    OS="$TRY0001"-"$TRY0002"-"$ARCH"
+    RESULTCODE=0
+    SEVPN_REMOTE_BIN_CHOICE=$SEVPN_REMOTE_BIN_AMD64
+    return 0
+  fi
+
+  return 1
+
+}
+
 function check_CentOS7_x86_64() {
 
   # Find CentOS 7 x86_64
@@ -104,7 +120,7 @@ function check_Debian10_x86_64() {
 ####################################################
 
 
-declare -a checklist_name=("CentOS7_x86_64" "Ubuntu20_x86_64" "Ubuntu18_x86_64" "Debian10_x86_64" "Debian9_x86_64")
+declare -a checklist_name=("CentOS8_x86_64" "CentOS7_x86_64" "Ubuntu20_x86_64" "Ubuntu18_x86_64" "Debian10_x86_64" "Debian9_x86_64")
 for i in ${checklist_name[@]}
 do
 

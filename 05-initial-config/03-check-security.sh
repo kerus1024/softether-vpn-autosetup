@@ -72,9 +72,9 @@ function check_firewalld_service () {
       /bin/systemctl disable firewalld
       /bin/systemctl mask firewalld
 
-      run=`systemctl status firewalld 2>&1 | grep "enabled" | wc -l`
+      run=`systemctl status firewalld 2>&1 | grep "  Active: inactive" | wc -l`
 
-      if [ "$run" -gt "0" ]; then
+      if [ "$run" -ne "1" ]; then
         echo -e "${Red}오류. firewalld를 비활성화하지 못했습니다.${Color_Off}"
         exit 1
       fi
