@@ -1,13 +1,13 @@
 #!/bin/bash
 
-if [ `command -v curl; echo $?` -gt "0" ]; then
+if [ `command -v curl > /dev/null 2>&1 ; echo $?` -gt "0" ]; then
   echo "curl 을 찾을 수 없습니다."
   echo "RHEL           : yum -y install curl"
   echo "Debian/Ubuntu  : apt -y install curl"
   exit
 fi
 
-if [ `command -v tar; echo $?` -gt "0" ]; then
+if [ `command -v tar > /dev/null 2>&1 ; echo $?` -gt "0" ]; then
   echo "tar 를 찾을 수 없습니다."
   echo "RHEL           : yum -y install tar"
   echo "Debian/Ubuntu  : apt -y install tar"
