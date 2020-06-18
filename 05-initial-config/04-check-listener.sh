@@ -4,6 +4,17 @@ echo "[Check Listener]"
 
 function check_listener() {
 
+  testnetstat=`/usr/bin/netstat --help > /dev/null 2>&1`
+
+  if [ "$?" -gt "0" ]; then
+    /usr/bin/clear 2> /dev/null
+    echo -e "${Red} netstat 명령을 실행할 수 없습니다."
+    echo -e "${Yellow} net-tools 패키지를 설치해주세요.${Color_Off}"
+    echo "RHEL    : yum -y install net-tools"
+    echo "Debian  : apt -y install net-tools"
+    exit
+  fi
+
   totalcnt=4
   current_error=0
 

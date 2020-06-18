@@ -21,7 +21,7 @@ fi
 
 echo Forwarding 적용
 /sbin/sysctl -w net.ipv4.ip_forward=1
-cat << _EOF_ > /etc/sysctl.conf 
+cat << _EOF_ >> /etc/sysctl.conf 
 net.ipv4.ip_forward=1
 _EOF_
 
