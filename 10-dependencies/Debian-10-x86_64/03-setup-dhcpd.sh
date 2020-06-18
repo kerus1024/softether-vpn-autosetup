@@ -11,5 +11,5 @@ chmod 700 $SEVPN_NETWORK_ENVSCRIPT_PATH/restartDHCPD.sh
 
 cat << _EOF_ > $SEVPN_NETWORK_ENVSCRIPT_PATH/restartDHCPD.sh
 #!/bin/bash
-/bin/systemctl stop isc-dhcp-server ; /bin/systemctl stop isc-dhcp-server
+/bin/systemctl stop isc-dhcp-server ; /bin/systemctl start isc-dhcp-server
 _EOF_
