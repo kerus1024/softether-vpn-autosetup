@@ -1,7 +1,7 @@
 # softether-vpn-autosetup
 SoftEther VPN AutoSetup for Linux
 
-## Features
+## Supports
 - CentOS 7 (x86_64)
 - Debian 10 (buster) x86_64
 - Ubuntu 18 (bionic) (x86_64)
