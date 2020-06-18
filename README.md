@@ -2,8 +2,9 @@
 SoftEther VPN AutoSetup for Linux
 
 ## Supports Distros
-- CentOS 7 (x86_64)
+- CentOS 7 x86_64
 - Debian 10 (buster) x86_64
+- Debian 9 (stretch) x86_64
 - Ubuntu 20 (focal) x86_64
 - Ubuntu 18 (bionic) x86_64
 

@@ -84,11 +84,27 @@ function check_Debian10_x86_64() {
 
 }
 
+function check_Debian10_x86_64() {
+
+  TRY0001=`/usr/bin/lsb_release -si`
+  TRY0002=`/usr/bin/lsb_release -cs`
+
+  if [ "$TRY0001" = "Debian" ] && [ "$TRY0002" = "stretch" ] && [ "$ARCH" = "x86_64" ]; then
+    OS="Debian-9-x86_64"
+    RESULTCODE=0
+    SEVPN_REMOTE_BIN_CHOICE=$SEVPN_REMOTE_BIN_AMD64
+    return 0
+  fi
+
+  return 1
+
+}
+
 
 ####################################################
 
 
-declare -a checklist_name=("CentOS7_x86_64" "Ubuntu20_x86_64" "Ubuntu18_x86_64" "Debian10_x86_64")
+declare -a checklist_name=("CentOS7_x86_64" "Ubuntu20_x86_64" "Ubuntu18_x86_64" "Debian10_x86_64" "Debian9_x86_64")
 for i in ${checklist_name[@]}
 do
 
