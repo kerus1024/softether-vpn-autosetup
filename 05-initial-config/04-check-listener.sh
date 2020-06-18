@@ -10,8 +10,8 @@ function check_listener() {
     /usr/bin/clear 2> /dev/null
     echo -e "${Red} netstat 명령을 실행할 수 없습니다."
     echo -e "${Yellow} net-tools 패키지를 설치해주세요.${Color_Off}"
-    echo "RHEL    : yum -y install net-tools"
-    echo "Debian  : apt -y install net-tools"
+    echo "RHEL           : yum -y install net-tools"
+    echo "Debian/Ubuntu  : apt -y install net-tools"
     exit
   fi
 
