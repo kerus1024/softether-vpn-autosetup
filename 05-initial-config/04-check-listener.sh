@@ -4,7 +4,7 @@ echo "[Check Listener]"
 
 function check_listener() {
 
-  testnetstat=`/usr/bin/netstat --help > /dev/null 2>&1`
+  testnetstat=`netstat --help > /dev/null 2>&1`
 
   if [ "$?" -gt "0" ]; then
     /usr/bin/clear 2> /dev/null
