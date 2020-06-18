@@ -8,3 +8,10 @@ sed -i '/^ExecStart/s/$/ tap_'$SEVPN_NETWORK_LOCAL_BRIDGE_TAP_NAME'/' /etc/syste
 /bin/systemctl --system daemon-reload
 
 
+touch $SEVPN_NETWORK_ENVSCRIPT_PATH/restartDHCPD.sh
+chmod 700 $SEVPN_NETWORK_ENVSCRIPT_PATH/restartDHCPD.sh
+
+cat << _EOF_ > $SEVPN_NETWORK_ENVSCRIPT_PATH/restartDHCPD.sh
+#!/bin/bash
+/bin/systemctl stop dhcpd ; /bin/systemctl start dhcpd
+_EOF_

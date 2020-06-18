@@ -8,8 +8,8 @@ echo
 
 function get_internet_info() {
 
-  getinterface=`ip route | head -n 1 | awk '{ print $NF }'`
-
+  #getinterface=`ip route | head -n 1 | awk '{ print $NF }'`
+  getinterface=$(echo `ip route | head -n 1 | grep -oP '\sdev\s[^\s]+\s'` | awk '{ print $2 }')
   /sbin/ifconfig
 
   userinterface=""

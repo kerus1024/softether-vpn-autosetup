@@ -30,19 +30,35 @@ function check_CentOS7_x86_64() {
 
 }
 
+function check_Ubuntu18_x86_64() {
+
+  # Find Ubuntu 18 x86_64
+  TRY0001=`lsb_release -cs`
+  TRY0002=`/usr/bin/lsb_release -rs | cut -b 1-2`
+
+  if [ "$TRY0001" = "bionic" ] && [ "$TRY0002" = "18" ] && [ "$ARCH" = "x86_64" ]; then
+    
+    OS="Ubuntu-18-x86_64"
+    RESULTCODE=0
+    SEVPN_REMOTE_BIN_CHOICE=$SEVPN_REMOTE_BIN_AMD64
+    return 0
+  fi
+
+  return 1
+
+}
 
 ####################################################
 
 
 declare -a checklist_name=("CentOS7_x86_64" "Ubuntu18_x86_64")
-
-for i in $checklist_name
+for i in ${checklist_name[@]}
 do
 
-  printf "\nCheck $checklist_name = "
-  check_"$checklist_name"
+  printf "\nCheck $i = "
+  check_"${i}"
 
-  if [ "$?" ]; then
+  if [ "$?" = "0" ]; then
 
     printf "$OS\n\n"
     break

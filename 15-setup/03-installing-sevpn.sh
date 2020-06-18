@@ -59,14 +59,13 @@ while true;
 do
   if [ "\$(ip l | fgrep ' tap_$SEVPN_NETWORK_LOCAL_BRIDGE_TAP_NAME': | wc -l)" -gt "0" ]; then
     /sbin/ifconfig tap_$SEVPN_NETWORK_LOCAL_BRIDGE_TAP_NAME $SEVPN_NETWORK_LOCAL_BRIDGE_NAT_GATEWAY netmask $SEVPN_NETWORK_LOCAL_BRIDGE_MASK
-    /bin/systemctl stop dhcpd && /bin/systemctl start dhcpd
+    $SEVPN_NETWORK_ENVSCRIPT_PATH/restartDHCPD.sh
     /sbin/iptables -t nat -D POSTROUTING -s $SEVPN_NETWORK_LOCAL_BRIDGE_ID/$SEVPN_NETWORK_LOCAL_BRIDGE_PREFIX -j SNAT --to-source $SEVPN_LOCAL_ETHERNET_SOURCEIP 2> /dev/null
     /sbin/iptables -t nat -A POSTROUTING -s $SEVPN_NETWORK_LOCAL_BRIDGE_ID/$SEVPN_NETWORK_LOCAL_BRIDGE_PREFIX -j SNAT --to-source $SEVPN_LOCAL_ETHERNET_SOURCEIP
     break
   fi
   sleep 1
 done
-
 
 _EOF_
 
