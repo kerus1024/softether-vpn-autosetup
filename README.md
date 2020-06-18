@@ -13,3 +13,7 @@ SoftEther VPN AutoSetup for Linux
 ```
 bash <(curl -s https://raw.githubusercontent.com/kerus1024/softether-vpn-autosetup/master/get-autosetup.sh)
  ```
+
+
+## CAUTION
+Do not use on production servers. Data may be lost.
