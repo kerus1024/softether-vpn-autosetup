@@ -60,6 +60,7 @@ function sevpn_settings() {
   $cmdserver /cmd IPsecEnable /L2TP:yes /L2TPRAW:no /ETHERIP:no /PSK:vpn /DEFAULTHUB:$hubname
   $cmdserver /adminhub:$hubname /cmd UserCreate $SEVPN_NETWORK_START_USERNAME /GROUP:none /REALNAME:none /NOTE:none
   $cmdserver /adminhub:$hubname /cmd UserPasswordSet $SEVPN_NETWORK_START_USERNAME /PASSWORD:$SEVPN_NETWORK_START_PASSWORD
+  $cmdserver /adminhub:$hubname /cmd SstpEnable yes
   $cmdserver /cmd DynamicDnsGetStatus 
   echo
   echo "설정완료 !"
