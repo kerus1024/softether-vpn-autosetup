@@ -54,6 +54,8 @@ function get_internet_info() {
 
       if [ "$?" -ne "0" ] || [ $checkexist -eq "0" ]; then
         echo -e "${Red}인터페이스에 존재하지 않는 IP 입니다.${Color_Off}"
+        # 오류지만 사용자가 입력하면 넘기기로..
+        break
       else
         break
       fi
