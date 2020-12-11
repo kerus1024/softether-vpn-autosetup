@@ -1,7 +1,4 @@
 #!/bin/bash
 
-# TODO
-
-#/bin/systemctl enable iptables
-#service iptables save
+iptables-save > /etc/iptables/rules.v4
 
