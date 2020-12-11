@@ -11,7 +11,7 @@ SoftEther VPN AutoSetup for Linux
 - MS-SSTP
 
 ## Supports Distros
-- CentOS 8 x86_64
+- CentOS 8 x86_64 ~~r.i.p~~
 - CentOS 7 x86_64
 - Debian 10 (buster) x86_64
 - Debian 9 (stretch) x86_64
