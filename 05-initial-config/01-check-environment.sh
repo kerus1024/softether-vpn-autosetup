@@ -100,7 +100,7 @@ function check_Debian10_x86_64() {
 
 }
 
-function check_Debian10_x86_64() {
+function check_Debian9_x86_64() {
 
   TRY0001=`/usr/bin/lsb_release -si`
   TRY0002=`/usr/bin/lsb_release -cs`
