@@ -38,7 +38,7 @@ function sevpn_settings() {
   PASSARG=$SEVPN_NETWORK_DEFAULT_ADMINPASSWORD
 
   echo -ne "\r[ ] Password 적용"
-  $vpncmd /SERVER localhost /cmd ServerPasswordSet $SEVPN_NETWORK_DEFAULT_ADMINPASSWORD
+  $vpncmd /SERVER $localhost /cmd ServerPasswordSet $SEVPN_NETWORK_DEFAULT_ADMINPASSWORD
   sleep 1
   echo -ne "\r[✓] Password 적용\n"
 
