@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # SoftEther PATH
-SEVPN_REMOTE_BIN_AMD64="https://github.com/SoftEtherVPN/SoftEtherVPN_Stable/releases/download/v4.34-9745-beta/softether-vpnserver-v4.34-9745-beta-2020.04.05-linux-x64-64bit.tar.gz"
-SEVPN_REMOTE_BIN_ARM32="https://github.com/SoftEtherVPN/SoftEtherVPN_Stable/releases/download/v4.34-9745-beta/softether-vpnserver-v4.34-9745-beta-2020.04.05-linux-arm_eabi-32bit.tar.gz"
-SEVPN_REMOTE_VERSION="4.34.9745"
+SEVPN_REMOTE_BIN_AMD64="https://github.com/SoftEtherVPN/SoftEtherVPN_Stable/releases/download/v4.36-9754-beta/softether-vpnserver-v4.36-9754-beta-2021.06.07-linux-x64-64bit.tar.gz"
+SEVPN_REMOTE_BIN_ARM32="https://github.com/SoftEtherVPN/SoftEtherVPN_Stable/releases/download/v4.36-9754-beta/softether-vpnserver-v4.36-9754-beta-2021.06.07-linux-arm_eabi-32bit.tar.gz"
+SEVPN_REMOTE_VERSION="4.36-9754"
 SEVPN_LOCAL_PATH="/usr/local/vpnserver"
 SEVPN_SERVICE_PATH="/lib/systemd/system/softether-vpnserver.service"
 
