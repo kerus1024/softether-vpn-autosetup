@@ -1,8 +1,8 @@
 #!/bin/bash
-
+ENV_PRINT_DEBUG=yes
 ENV_REMOTE_SOFTETHER_PACKAGE=
 
-get_remote_softether_package () {
+set_remote_softether_package () {
   # https://github.com/SoftEtherVPN/SoftEtherVPN_Stable/releases/download/v4.38-9760-rtm/softether-vpnserver-v4.38-9760-rtm-2021.08.17-linux-x64-64bit.tar.gz
   basedir='https://github.com/SoftEtherVPN/SoftEtherVPN_Stable/releases/download'
   version='v4.38-9760-rtm'
@@ -16,19 +16,19 @@ get_remote_softether_package () {
   
   case "$1" in
     "intel86")
-      ENV_REMOTE_SOFTETHER_PACKAGE=LINUX_INTEL86
+      ENV_REMOTE_SOFTETHER_PACKAGE=$LINUX_INTEL86
       ;;
-    "amd64")
-      ENV_REMOTE_SOFTETHER_PACKAGE=LINUX_AMD64
+    "amd64"|"x86_64")
+      ENV_REMOTE_SOFTETHER_PACKAGE=$LINUX_AMD64
       ;;  
     "arm32")
-      ENV_REMOTE_SOFTETHER_PACKAGE=LINUX_ARM32
+      ENV_REMOTE_SOFTETHER_PACKAGE=$LINUX_ARM32
       ;;
     "arm64")
-      ENV_REMOTE_SOFTETHER_PACKAGE=LINUX_ARM64
+      ENV_REMOTE_SOFTETHER_PACKAGE=$LINUX_ARM64
       ;;
     "armeabi")
-      ENV_REMOTE_SOFTETHER_PACKAGE=LINUX_ARMEABI
+      ENV_REMOTE_SOFTETHER_PACKAGE=$LINUX_ARMEABI
       ;;
     *)
       echo "패키지를 알 수 없는 아키텍처: $1"
@@ -157,17 +157,42 @@ is_root() {
     fi
 }
 
+run_without_print () {
+  if [ ! -z "$ENV_PRINT_DEBUG" ]; then
+    echo "${BASH_SOURCE[1]##*/}:${BASH_LINENO[0]} : ${@}"
+  fi
+
+  echo "${BASH_SOURCE[1]##*/}:${BASH_LINENO[0]} : ${@}" >> $VAR_LOCAL_TMP_STOUT_FILE 2>> $VAR_LOCAL_TMP_STERR_FILE
+  ${@} >> $VAR_LOCAL_TMP_STOUT_FILE 2>> $VAR_LOCAL_TMP_STERR_FILE
+  if [ ! -z "$ENV_PRINT_DEBUG" ]; then
+    echo "[exit status code: $?] ${@}"
+  fi
+  return $?
+}
+
+print_clear() {
+  /usr/bin/clear 2> /dev/null
+}
 print_color() {
   
   if [ -z "$1" ]; then return; fi;
 
   echoset="echo -n -e"
-
   echo="echo"
   text="${@:2}"
 
   if [ "$2" = "inline" ]; then
     echo="echo -n"
+    text="${@:3}"
+  fi
+
+  if [ "$2" = "debug" ]; then
+
+    if [ -z "$ENV_PRINT_DEBUG" ]; then
+      return
+    fi
+
+    echo="echo"
     text="${@:3}"
   fi
   
@@ -207,6 +232,10 @@ print_color() {
     *)
       ;;
   esac
+
+  if [ "$2" = "debug" ]; then
+    echo -n "${BASH_SOURCE[1]##*/}:${BASH_LINENO[0]} : "
+  fi 
 
   $echo $text
 

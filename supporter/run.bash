@@ -57,7 +57,7 @@ for iffile in /sys/class/net/tap_*; do
     # 이 경우엔 source 보다 bash 가 좋아보임.
     if [ -f "./interfaces.d/$ifname.up.bash" ]; then
       logger $ifname.up.bash 실행합니다.
-      bash ./interfaces.d/$ifname.up.bash
+      bash ./interfaces.d/$ifname.up.bash $iffile
     else
       logger $ifname.up.bash 가 없어요.
     fi
@@ -79,7 +79,7 @@ for ifname in ${!status_if[@]}; do
 
     if [ -f "./interfaces.d/$ifname.down.bash" ]; then
       logger $ifname.down.bash 실행합니다.
-      bash ./interfaces.d/$ifname.down.bash
+      bash ./interfaces.d/$ifname.down.bash $iffile
     else 
       logger $ifname.down.bash 가 없어요.
     fi
