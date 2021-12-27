@@ -28,11 +28,6 @@ check_distro () {
 
 }
 
-VAR_LOCAL_IPTABLES_SYSTEM=
-check_iptables () {
-  return
-}
-
 check_listener () {
 
   # net-tools
@@ -71,28 +66,16 @@ check_listener () {
   return
 }
 
-build_binary () {
-  #make ..
+VAR_LOCAL_IPTABLES_SYSTEM=
+check_iptables () {
+  if ! `command -v iptables &> /dev/null`; then
+    print_color red iptables 도구를 찾지 못했습니다.
+    install_iptables
+  fi
   return
-}
-
-copy_binary () {
-  return
-}
-
-install_tap_up () {
-  sysctl -w net.ipv6.conf.$adapter.use_tempaddr=0
-  sysctl -w net.ipv6.conf.$adapter.forwarding=0
-  sysctl -w net.ipv6.conf.$adapter.accept_ra=0
-  sysctl -w net.ipv6.conf.$adapter.autoconf=0
 }
 
 # https://www.hpc.mil/program-areas/networking-overview/2013-10-03-17-24-38/ipv6-knowledge-base-ip-transport/enabling-ipv6-in-debian-and-ubuntu-linux
-
-
-install_tap_down () {
-  return
-}
 
 echo '
 
@@ -152,12 +135,18 @@ print_color cyan 시스템에 사용 가능한 TCP, UDP 포트를 확인합니�
 check_listener
 
 # Dependency 설치
-print_color cyan 의존성 설치를 시작합니다.
+print_color cyan 의존성 소프트웨어 설치를 시작합니다.
 install_dependencies
 
 # DHCP 서버 설치 및 DHCP4 서버 설정
 print_color cyan DHCP 서버 설치를 시작합니다.
+if [ -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_DHCP" ] || [ -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_DHCP_DNS" ] || [ -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NAT" ]; then
+  print_color red 미지원 
+  exit 1
+fi
 install_dhcp_server
+configure_dhcp_server
+#restart_dhcp_server
 
 # DHCP6 (RADVD RA) 설치 및 서버 설정
 if [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_ENABLE" ]; then
@@ -231,15 +220,15 @@ _vpnserver=$VAR_LOCAL_WORKINGDIR/vpnserver
 __vpncmd=$VAR_LOCAL_WORKINGDIR/vpncmd
 
 # SEVPN dryrun
-print_color cyan 잠시 VPN서버를 시작합니다.
+print_color cyan 임시로 SEVPN 서버를 시작합니다.
 run_without_print $_vpnserver start
 if (( $? )); then 
-  print_color red VPN서버 시작에 실패했어요.
+  print_color red VPN 서버 시작에 실패했어요.
   exit 1
 fi
 
 # 기본 설정이 될 때 까지 대기한다.
-print_color cyan 잠시 대기 합니다...
+print_color cyan SEVPN 서버 가동을 위해 잠시 대기 합니다.
 sleep 3
 print_color white debug dry-run...
 _vpncmd="$__vpncmd /SERVER 127.0.0.1:$VAR_LOCAL_SEVPN_TCP_DEFAULT_PORT"
@@ -253,7 +242,7 @@ fi
 # 관리 비밀번호 설정
 run_without_print $_vpncmd /cmd ServerPasswordSet $VAR_LOCAL_SEVPN_ADMINPASSWORD
 if (( $? )); then
-  print_color red 관리 패스워드 설정에 실패했어요.
+  print_color red SEVPN 관리 패스워드 설정에 실패했어요.
   exit 1
 fi
 
@@ -263,7 +252,7 @@ _vpncmd="$_vpncmd /PASSWORD:$VAR_LOCAL_SEVPN_ADMINPASSWORD"
 
 
 # 기본 TCP 포트 제거 및 신규 포트 할당
-print_color cyan SoftEther VPN의 TCP 포트 리스너를 생성 후 기존 포트를 제거합니다.
+print_color cyan SEVPN의 TCP 포트 리스너를 생성 후 기존 포트를 제거합니다.
 exit_count=0
 run_without_print $_vpncmd /cmd ListenerDelete 443 || (( exit_count++ ));
 run_without_print $_vpncmd /cmd ListenerDelete 992 || (( exit_count++ ));
@@ -279,7 +268,7 @@ if (( $exit_count )); then
 fi
 
 # 신규 포트로 재연결
-print_color cyan 새로 생성한 TCP 서버에 연결을 시도합니다.
+print_color cyan SEVPN의 새로 생성한 TCP 서버에 연결을 시도합니다.
 vpncmd="$__vpncmd /SERVER 127.0.0.1:$VAR_LOCAL_SEVPN_TCP_BASE_PORT /PASSWORD:$VAR_LOCAL_SEVPN_ADMINPASSWORD"
 run_without_print $vpncmd /cmd About
 if (( $? )); then
@@ -288,7 +277,7 @@ if (( $? )); then
 fi
 
 # 기본 Virtual Hub 제거
-print_color cyan 기본 Virtual Hub를 제거합니다.
+print_color cyan SEVPN의 기본 Virtual Hub를 제거합니다.
 run_without_print $vpncmd /cmd HubDelete DEFAULT
 if (( $? )); then
   print_color red 기본 Virtual Hub를 제거에 실패했어요.
@@ -296,18 +285,18 @@ if (( $? )); then
 fi
 
 # 기본 설정
-print_color cyan SEVPN 서버 설정을 시작합니다.
+print_color cyan SEVPN의 서버 설정을 시작합니다.
 exit_count=0
 run_without_print $vpncmd /cmd HubCreate $VAR_LOCAL_SEVPN_FIRSTHUB_NAME /PASSWORD || (( exit_count++ ));
 run_without_print $vpncmd /cmd BridgeCreate $VAR_LOCAL_SEVPN_FIRSTHUB_NAME /DEVICE:$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME /TAP:yes || (( exit_count++ ));
 run_without_print $vpncmd /cmd ServerCipherSet $VAR_LOCAL_SEVPN_ENCRYPTION_CIPHER || (( exit_count++ ));
 if [ ! -z "$VAR_LOCAL_SEVPN_SSTP" ]; then
-  print_color white Sstp를 활성화 합니다.
+  print_color white + MS-SSTP를 활성화 합니다.
   run_without_print $vpncmd /cmd SstpEnable yes || (( exit_count++ ));
 fi
 
 if [ ! -z "$VAR_LOCAL_SEVPN_L2TPIPSEC" ]; then
-  print_color white IPSEC을 활성화 합니다.
+  print_color white + L2TP/IPSEC을 활성화 합니다.
   run_without_print $vpncmd /cmd IPsecEnable /L2TP:yes /L2TPRAW:no /ETHERIP:no /PSK:$VAR_LOCAL_SEVPN_L2TPIPSEC_PRESHAREDKEY /DEFAULTHUB:$VAR_LOCAL_SEVPN_FIRSTHUB_NAME || (( exit_count++ ));
 fi
 run_without_print $vpncmd /adminhub:$VAR_LOCAL_SEVPN_FIRSTHUB_NAME /cmd UserCreate $VAR_LOCAL_SEVPN_FIRSTHUB_FIRSTVPNUSER /GROUP:none /REALNAME:none /NOTE:none || (( exit_count++ ));
@@ -322,31 +311,36 @@ run_without_print $vpncmd /adminhub:$VAR_LOCAL_SEVPN_FIRSTHUB_NAME /cmd LogDisab
 run_without_print $vpncmd /cmd OpenVpnEnable yes /PORTS:$VAR_LOCAL_SEVPN_OPENVPN_UDP_PORT || (( exit_count++ ));
 
 if (( $exit_count )); then
-  print_color red debug ExitCount: $exit_count
-  print_color cyan SEVPN 서버 설정에 문제가 발생했어요.
+  print_color red debug - ExitCount: $exit_count
+  print_color red SEVPN 서버 설정에 문제가 발생했어요.
   exit 1
 fi
 
 if [ -z "$VAR_LOCAL_SEVPN_DDNSCLIENT" ]; then
   # DDNS클라이언트를 비활성화 하는 경우 기본 OpenVPN 인증서를 변경해야한다.
   # DDNS클라이언트를 시작하자마자 어떻게 비활성화 할 수 있을까?
-  print_color cyan DDNSClient를 비활성화 합니다
+  print_color cyan SEVPN DDNSClient를 비활성화 합니다
   print_color red 미지원
   exit 1
 fi
 
 # SEVPN 종료
 print_color cyan SEVPN 서버설정이 끝났습니다.
-print_color cyan 잠시 VPN 서버를 종료합니다.
-$_vpnserver stop
+print_color cyan 임시로 실행한 VPN 서버를 종료합니다.
+run_without_print $_vpnserver stop
 print_color red debug 기존에 생성 된 필요 없는 파일 삭제..
 run_without_print rm -rf $VAR_LOCAL_WORKINGDIR/packet_log
 run_without_print rm -rf $VAR_LOCAL_WORKINGDIR/security_log
 
+# IP 포워딩 활성화
+print_color cyan 커널 IP 포워딩을 활성화합니다.
+run_without_print sysctl -w net.ipv4.ip_forward=1
+cat > /etc/sysctl.d/99-ip4-forward.conf <<_EOF
+net.ipv4.ip_forward=1
+_EOF
+
 # supporter 설치
-# /usr/local/vpnserver/supporter/run.bash
-print_color cyan SE VPN Supporter를 설치합니다.
-# VAR_LOCAL_WORKING_DIR
+print_color cyan SEVPN Supporter를 설치합니다.
 mkdir -p $VAR_LOCAL_WORKINGDIR/supporter
 mkdir -p $VAR_LOCAL_WORKINGDIR/lib
 cp -r $VAR_LOCAL_SCRIPT_WORKINGDIR/supporter/* $VAR_LOCAL_WORKINGDIR/supporter
@@ -358,36 +352,45 @@ fi
 
 find $VAR_LOCAL_WORKINGDIR/supporter/ -name '*.bash' -exec chmod 700 {} \;
 
-# supporter, iptables 설정 구성, 및 적용
-sysctl -w net.ipv4.ip_forward=1
-cat > /etc/sysctl.d/99-ip4-forward.conf <<_EOF
-net.ipv4.ip_forward=1
-_EOF
-
 if [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NAT_SNAT_IPADDRESS" ]; then
   print_color red 미지원
   exit 1
 fi
 
-cat > $VAR_LOCAL_WORKINGDIR/supporter/interfaces.d/$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.up.bash <<_EOF
-#!/bin/bash
-ip addr add $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NETWORK/$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_MASKBIT dev \$1
+# ifup
+rm -f $VAR_LOCAL_WORKINGDIR/supporter/interfaces.d/$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.up.bash
+cat > $VAR_LOCAL_WORKINGDIR/supporter/interfaces.d/$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.up.bash <<< '#!/bin/bash'
+cat >> $VAR_LOCAL_WORKINGDIR/supporter/interfaces.d/$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.up.bash <<_EOF 
+sysctl -w net.ipv6.conf.\$1.disable_ipv6=1
+sysctl -w net.ipv6.conf.\$1.use_tempaddr=0
+sysctl -w net.ipv6.conf.\$1.forwarding=0
+sysctl -w net.ipv6.conf.\$1.accept_ra=0
+sysctl -w net.ipv6.conf.\$1.autoconf=0
+_EOF
+
+cat >> $VAR_LOCAL_WORKINGDIR/supporter/interfaces.d/$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.up.bash <<_EOF
+ip addr add $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_LOCALADDRESS/$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_MASKBIT dev \$1
 iptables -D FORWARD -i tap_${VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME} -m state --state ESTABLISHED,RELATED -j ACCEPT 2> /dev/null
 iptables -D FORWARD -i tap_${VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME} -j ACCEPT 2> /dev/null
 iptables -t nat -D POSTROUTING -i tap_${VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME} -o $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NAT_MASQUERADE_OUTINTERFACE -j ACCEPT 2> /dev/null
 iptables -A FORWARD -i tap_${VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME} -m state --state ESTABLISHED,RELATED -j ACCEPT
 iptables -A FORWARD -i tap_${VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME} -j ACCEPT
-iptables -t nat -A POSTROUTING -s todo -o $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NAT_MASQUERADE_OUTINTERFACE -j MASQUERADE
+iptables -t nat -A POSTROUTING -s $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NETWORK/$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_MASKBIT -o $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NAT_MASQUERADE_OUTINTERFACE -j MASQUERADE
 _EOF
+# DHCP 시작 스크립트 추가 ( ip가 할당 되지 않으면 dhcp서버 시작이 안된다. )
+append_run_dhcp_on_interface_script
 
-cat > $VAR_LOCAL_WORKINGDIR/supporter/interfaces.d/$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.down.bash <<_EOF
-#!/bin/bash
+# ifdown
+rm -f $VAR_LOCAL_WORKINGDIR/supporter/interfaces.d/$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.down.bash
+cat > $VAR_LOCAL_WORKINGDIR/supporter/interfaces.d/$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.down.bash <<< '#!/bin/bash'
+cat >> $VAR_LOCAL_WORKINGDIR/supporter/interfaces.d/$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.down.bash <<_EOF 
 iptables -D FORWARD -i tap_${VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME} -m state --state ESTABLISHED,RELATED -j ACCEPT 2> /dev/null
 iptables -D FORWARD -i tap_${VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME} -j ACCEPT 2> /dev/null
-iptables -t nat -D POSTROUTING -s todo -o $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NAT_MASQUERADE_OUTINTERFACE -j MASQUERADE 2> /dev/null
+iptables -t nat -D POSTROUTING -s $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NETWORK/$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_MASKBIT -o $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NAT_MASQUERADE_OUTINTERFACE -j MASQUERADE 2> /dev/null
 _EOF
 
 # 서비스(systemd) 설치
+print_color SEVPN 시스템 서비스를 설치합니다.
 cat > /etc/systemd/system/vpnserver.service <<_
 [Unit]
 Description=SoftEther VPN Server
@@ -428,8 +431,22 @@ chmod 755 /etc/systemd/system/vpnserver-supporter.service
 systemctl daemon-reload
 
 # 서비스 실행
+print_color cyan SEVPN 서비스를 시작합니다.
+systemctl stop vpnserver.service vpnserver-supporter.service >/dev/null 2>&1
 systemctl start vpnserver.service vpnserver-supporter.service
 systemctl enable vpnserver.service vpnserver-supporter.service
 
-# 마무리. 임시파일 삭제
-echo OK?!
+sleep 1
+
+if `systemctl is-active $VAR_LOCAL_ENV_DHCPD_SERVICE >/dev/null 2>&1`; then
+  print_color green DHCP 서버가 정상적으로 실행중입니다.
+else
+  print_color red DHCP 서버가 정상적으로 실행되고 있지 않습니다.
+fi
+
+# 마무리
+echo '
+
+
+'
+print_color white 설치가 완료되었습니다.

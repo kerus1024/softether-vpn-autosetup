@@ -1,20 +1,9 @@
 #!/bin/bash
 #set -e
 #set -x
-
-
-
 source ../lib/common.bash
 
 declare -A status_if
-
-# init, up, down
-# status_if["soft"]=up
-
-
-#print_color cyan `cat /proc/meminfo`
-#print_color red inline "Linux Version:  "
-#print_color cyan inline `uname -r`
 
 echo '
 * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -38,14 +27,12 @@ current_status_if=()
 for iffile in /sys/class/net/tap_*; do
 
   if [ ! -d "$iffile" ]; then 
-    print_color yellow TAP 장치를 못 찾았어요
+    print_color yellow debug TAP 장치를 못 찾았어요
     continue
-    #exit 1
   fi
 
   basename=`basename $iffile`
   ifname=`sed -e 's/^tap_\(.*\)/\1/' <<< $basename`
-  #echo Found $ifname
 
   if [ -z "${status_if[$ifname]}" ]; then
     print_color green $ifname 를 처음 발견했어요.
@@ -57,7 +44,7 @@ for iffile in /sys/class/net/tap_*; do
     # 이 경우엔 source 보다 bash 가 좋아보임.
     if [ -f "./interfaces.d/$ifname.up.bash" ]; then
       logger $ifname.up.bash 실행합니다.
-      bash ./interfaces.d/$ifname.up.bash $iffile
+      bash ./interfaces.d/$ifname.up.bash tap_$ifname
     else
       logger $ifname.up.bash 가 없어요.
     fi
@@ -79,7 +66,7 @@ for ifname in ${!status_if[@]}; do
 
     if [ -f "./interfaces.d/$ifname.down.bash" ]; then
       logger $ifname.down.bash 실행합니다.
-      bash ./interfaces.d/$ifname.down.bash $iffile
+      bash ./interfaces.d/$ifname.down.bash tap_$ifname
     else 
       logger $ifname.down.bash 가 없어요.
     fi

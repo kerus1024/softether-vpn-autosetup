@@ -1,12 +1,12 @@
 #!/bin/bash
-
+VAR_LOCAL_ENV_OS=
+VAR_LOCAL_ENV_CODENAME=
+VAR_LOCAL_ENV_PLATFORM=
+VAR_LOCAL_ENV_DHCPD_SERVICE=
 check_environment() {
   return 1
 }
 install_dependencies () {
-  return
-}
-check_iptables () {
   return
 }
 check_selinux () {
@@ -49,6 +49,12 @@ disable_selinux () {
 install_dhcp_server () { 
   return
 }
+configure_dhcp_server () {
+  return
+}
+restart_dhcp_server () {
+  return
+}
 install_dhcp6_server () { 
   return
 }
@@ -64,13 +70,6 @@ check_firewall () {
 append_firewall () { 
   return
 }
-install_sevpn () { 
-  return
-}
 install_iptables () {
   return
 }
-install_service () { 
-  return
-}
-

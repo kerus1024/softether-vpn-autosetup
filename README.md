@@ -1,28 +1,29 @@
-# softether-vpn-autosetup
-SoftEther VPN AutoSetup for Linux
+# SoftEther VPN AutoSetup for Linux
 
-## Features
-- SoftEther VPN Server (Standalone)
-- Linux Local Bridge (prevents sevpn securenat internal loops)
-- NAT Setup
-- DHCP Server (for Local Bridge VPN Client) Setup
+## 지원기능
+- 설정 응답 파일을 통한 자동 구성
+- SoftEther VPN Server (Standalone) 설치
+- Virtual Hub 리눅스 로컬브릿지 설정 (SecureNAT의 내부 패킷 루핑 버그를 방지합니다)
+- VPN 클라이언트를 위한 DHCPv4 Server 설정
+- VPN 클라이언트를 위한 NAT 설정
+- L2TP over IPSec (Pre-shared key) 설정
+- MS-SSTP 활성화
+- OpenVPN UDP 클론 서버 활성화
+- 단일 VPN 사용자 계정 자동 추가
 
-- L2TP over IPSec (Pre-shared key)
-- MS-SSTP
+## TO-DO
+- 쉘 커맨드를 통한 응답 파일 구성
+- IPv6 DHCP (RA) 구성
 
-## Supports Distros
-- CentOS 8 x86_64 ~~r.i.p~~
-- CentOS 7 x86_64
-- Debian 10 (buster) x86_64
-- Debian 9 (stretch) x86_64
-- Ubuntu 20 (focal) x86_64
-- Ubuntu 18 (bionic) x86_64 
+## 지원 되는 리눅스 배포판
+- Debian 11 (bullseye) x86_64
 
-## Install
+## 설치 방법
 ```
-bash <(curl -s https://raw.githubusercontent.com/kerus1024/softether-vpn-autosetup/master/get-autosetup.sh)
- ```
+git clone -b ng https://github.com/kerus1024/softether-vpn-autosetup ./setupvpn
+cd setupvpn
+bash setup.bash
+```
 
-
-## CAUTION
-Do not use on production servers. Data may be lost.
+## WARNING
+- https://raw.githubusercontent.com/SoftEtherVPN/SoftEtherVPN_Stable/master/WARNING.TXT
