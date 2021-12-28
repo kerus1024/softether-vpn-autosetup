@@ -1,5 +1,5 @@
 #!/bin/bash
-ENV_PRINT_DEBUG=yes
+ENV_PRINT_DEBUG=
 ENV_REMOTE_SOFTETHER_PACKAGE=
 
 set_remote_softether_package () {

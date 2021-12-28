@@ -8,7 +8,7 @@ check_environment() {
   if [ "`lsb_release -si`" = "$VAR_LOCAL_ENV_OS" ] && \
    [ "`lsb_release -cs`" = "$VAR_LOCAL_ENV_CODENAME" ] && \
    [ "`uname -m`" = "$VAR_LOCAL_ENV_PLATFORM" ]; then 
-    print_color cyan Debian bullseye x86-64
+    print_color cyan $VAR_LOCAL_ENV_OS $VAR_LOCAL_ENV_CODENAME $VAR_LOCAL_ENV_PLATFORM
     return
   else
     print_color red debug 해당 되지 않음

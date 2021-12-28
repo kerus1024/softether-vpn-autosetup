@@ -436,7 +436,7 @@ systemctl stop vpnserver.service vpnserver-supporter.service >/dev/null 2>&1
 systemctl start vpnserver.service vpnserver-supporter.service
 systemctl enable vpnserver.service vpnserver-supporter.service
 
-sleep 1
+sleep 3
 
 if `systemctl is-active $VAR_LOCAL_ENV_DHCPD_SERVICE >/dev/null 2>&1`; then
   print_color green DHCP 서버가 정상적으로 실행중입니다.
