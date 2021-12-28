@@ -377,10 +377,6 @@ iptables -A FORWARD -i tap_${VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME} -m state --state 
 iptables -A FORWARD -i tap_${VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME} -j ACCEPT
 iptables -t nat -A POSTROUTING -s $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NETWORK/$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_MASKBIT -o $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NAT_MASQUERADE_OUTINTERFACE -j MASQUERADE
 _EOF
-# DHCP 시작 스크립트 추가 ( ip가 할당 되지 않으면 dhcp서버 시작이 안된다. )
-append_run_dhcp_on_interface_script
-# 방화벽 허용 스크립트 추가
-append_allow_firewall_on_interface_script
 
 # ifdown
 rm -f $VAR_LOCAL_WORKINGDIR/supporter/interfaces.d/$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.down.bash
@@ -390,6 +386,11 @@ iptables -D FORWARD -i tap_${VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME} -m state --state 
 iptables -D FORWARD -i tap_${VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME} -j ACCEPT 2> /dev/null
 iptables -t nat -D POSTROUTING -s $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NETWORK/$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_MASKBIT -o $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NAT_MASQUERADE_OUTINTERFACE -j MASQUERADE 2> /dev/null
 _EOF
+
+# DHCP 시작 스크립트 추가 ( ip가 할당 되지 않으면 dhcp서버 시작이 안된다. )
+append_run_dhcp_on_interface_script
+# 방화벽 허용 스크립트 추가
+append_allow_firewall_on_interface_script
 
 # 서비스(systemd) 설치
 print_color cyan SEVPN 시스템 서비스를 설치합니다.

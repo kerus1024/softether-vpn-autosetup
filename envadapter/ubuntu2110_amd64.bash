@@ -32,14 +32,14 @@ _EOF
     print_color cyan - 허용되는 포트는 500/udp, 1701/udp, 4500/udp 입니다.
   fi
   cat >> $VAR_LOCAL_WORKINGDIR/supporter/interfaces.d/$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.up.bash <<_EOF
-ufw allow udp/500
-ufw allow udp/1701
-ufw allow udp/4500
+ufw allow 500/udp
+ufw allow 1701/udp
+ufw allow 4500/udp
 _EOF
   cat >> $VAR_LOCAL_WORKINGDIR/supporter/interfaces.d/$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.down.bash <<_EOF
-ufw delete allow udp/500
-ufw delete allow udp/1701
-ufw delete allow udp/4500
+ufw delete allow 500/udp
+ufw delete allow 1701/udp
+ufw delete allow 4500/udp
 _EOF
 
 }

@@ -245,6 +245,11 @@ print_color() {
 
 is_shell_safe_text () {
 
+  if ! `echo ${1@Q} > /dev/null 2>&1`; then
+    print_color red BASH 버전이 낮습니다.
+    return 0
+  fi
+
   safepass=`get_shell_safe_text $1`
 
   if [ "'$1'" != "$safepass" ]; then
