@@ -126,17 +126,17 @@ check_selinux
 print_color cyan 시스템에 설치 된 방화벽을 확인합니다.
 check_firewall
 
-# iptables 검사
-print_color cyan 시스템의 iptables 툴을 확인합니다.
-check_iptables
+# Dependency 설치
+print_color cyan 의존성 소프트웨어 설치를 시작합니다.
+install_dependencies
 
 # 사용 중인 TCP, UDP 포트 검사
 print_color cyan 시스템에 사용 가능한 TCP, UDP 포트를 확인합니다.
 check_listener
 
-# Dependency 설치
-print_color cyan 의존성 소프트웨어 설치를 시작합니다.
-install_dependencies
+# iptables 검사
+print_color cyan 시스템의 iptables 툴을 확인합니다.
+check_iptables
 
 # DHCP 서버 설치 및 DHCP4 서버 설정
 print_color cyan DHCP 서버 설치를 시작합니다.
@@ -379,6 +379,8 @@ iptables -t nat -A POSTROUTING -s $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NETWORK/$VA
 _EOF
 # DHCP 시작 스크립트 추가 ( ip가 할당 되지 않으면 dhcp서버 시작이 안된다. )
 append_run_dhcp_on_interface_script
+# 방화벽 허용 스크립트 추가
+append_allow_firewall_on_interface_script
 
 # ifdown
 rm -f $VAR_LOCAL_WORKINGDIR/supporter/interfaces.d/$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.down.bash
@@ -390,7 +392,7 @@ iptables -t nat -D POSTROUTING -s $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NETWORK/$VA
 _EOF
 
 # 서비스(systemd) 설치
-print_color SEVPN 시스템 서비스를 설치합니다.
+print_color cyan SEVPN 시스템 서비스를 설치합니다.
 cat > /etc/systemd/system/vpnserver.service <<_
 [Unit]
 Description=SoftEther VPN Server
@@ -432,12 +434,12 @@ systemctl daemon-reload
 
 # 서비스 실행
 print_color cyan SEVPN 서비스를 시작합니다.
-systemctl stop vpnserver.service vpnserver-supporter.service >/dev/null 2>&1
-systemctl start vpnserver.service vpnserver-supporter.service
-systemctl enable vpnserver.service vpnserver-supporter.service
+run_without_print systemctl stop vpnserver.service vpnserver-supporter.service
+run_without_print systemctl start vpnserver.service vpnserver-supporter.service
+run_without_print systemctl enable vpnserver.service vpnserver-supporter.service
 
-sleep 3
-
+sleep 5
+# DHCP서버 올라올때까지 시간이 걸린다.
 if `systemctl is-active $VAR_LOCAL_ENV_DHCPD_SERVICE >/dev/null 2>&1`; then
   print_color green DHCP 서버가 정상적으로 실행중입니다.
 else

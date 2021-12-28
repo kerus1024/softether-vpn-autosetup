@@ -26,7 +26,7 @@ install_dependencies () {
     exit 1
   fi
 
-  run_without_print apt-get install -y "build-essential" net-tools wget net-tools tar iproute2
+  run_without_print apt-get install -y "build-essential" net-tools wget tar iproute2
   if (( $? )); then
     print_color red APT 필수 의존성 설치에 실패했어요.
     exit 1
@@ -103,7 +103,7 @@ check_firewall () {
   return
 }
 
-append_firewall () {
+append_allow_firewall_on_interface_script () {
   return
 }
 

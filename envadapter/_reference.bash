@@ -67,7 +67,7 @@ check_firewall () {
   fi
 
 }
-append_firewall () { 
+append_allow_firewall_on_interface_script () { 
   return
 }
 install_iptables () {
