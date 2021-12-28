@@ -46,7 +46,7 @@ check_selinux () {
   # CentOS 7
   selinux_path=/etc/sysconfig/selinux
 
-  sesetatus=`sestatus | head -n 1 | awk '{print $3}'`
+  sestatus=`sestatus | head -n 1 | awk '{print $3}'`
 
   if [ "$sestatus" = "enabled" ]; then
     if [ ! -z "$VAR_LOCAL_SELINUX_DONT_DISABLE_SELINUX" ]; then
@@ -71,7 +71,7 @@ disable_selinux () {
 
   sed -i 's/^SELINUX=.*/SELINUX=disabled/' $selinux_path
 
-  sesetatus=`sestatus | head -n 1 | awk '{print $3}'`
+  sestatus=`sestatus | head -n 1 | awk '{print $3}'`
 
   if [ "$sestatus" = "Enforcing" ]; then
     print_color red SELinux 모드 변경에 실패 했습니다.
@@ -95,7 +95,7 @@ configure_dhcp_server () {
     exit 1
   fi
 
-  print_color cyan debug DHCP 서버 인터페이스 구성 변경 (sed)
+  print_color cyan debug "DHCP 서버 인터페이스 구성 변경 (sed)"
   sed -i -e "s/^ExecStart=.*/ExecStart=\/usr\/sbin\/dhcpd -f -cf \/etc\/dhcp\/dhcpd.conf -user dhcpd -group dhcpd --no-pid tap_${VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME}/" /etc/systemd/system/dhcpd.service  
   
   cat > /etc/dhcp/dhcpd.conf << _EOF
@@ -119,6 +119,12 @@ restart_dhcp_server () {
   else
     print_color red DHCP 서버 실행 실패
   fi
+}
+append_run_dhcp_on_interface_script () {
+  cat >> $VAR_LOCAL_WORKINGDIR/supporter/interfaces.d/$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.up.bash <<_EOF
+systemctl stop dhcpd > /dev/null 2>&1
+systemctl start dhcpd
+_EOF
 }
 install_dhcp6_server () { 
   return
@@ -168,7 +174,14 @@ firewall-cmd --remove-service=dhcp
 _EOF
     fi
 
-    firewall-cmd --reload
+    if [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NAT" ]; then 
+print_color white - firewalld 를 위한 허용 스크립트를 추가합니다.
+      cat >> $VAR_LOCAL_WORKINGDIR/supporter/interfaces.d/$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.up.bash <<_EOF
+firewall-cmd --direct --add-rule ipv4 nat POSTROUTING 0 -s $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NETWORK/$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_MASKBIT -o $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NAT_MASQUERADE_OUTINTERFACE -j MASQUERADE
+firewall-cmd --direct --add-rule ipv4 filter FORWARD 0 -i tap_${VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME} -o $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NAT_MASQUERADE_OUTINTERFACE -j ACCEPT
+firewall-cmd --direct --add-rule ipv4 filter FORWARD 0 -i tap_${VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME} -o $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NAT_MASQUERADE_OUTINTERFACE -m state --state RELATED,ESTABLISHED -j ACCEPT
+_EOF
+    fi
 
   fi
 
