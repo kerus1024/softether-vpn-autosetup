@@ -22,6 +22,7 @@ check_environment() {
   fi
   return 1
 }
+
 install_dependencies () {
   run_without_print yum update -y
   if (( $? )); then
@@ -41,6 +42,7 @@ install_dependencies () {
     exit 1
   fi
 }
+
 check_selinux () {
 
   # CentOS 7
@@ -59,6 +61,7 @@ check_selinux () {
   fi
 
 }
+
 disable_selinux () {
 
   if `/sbin/setenforce 0`; then 
@@ -120,21 +123,64 @@ restart_dhcp_server () {
     print_color red DHCP 서버 실행 실패
   fi
 }
+
 append_run_dhcp_on_interface_script () {
-  cat >> $VAR_LOCAL_WORKINGDIR/supporter/interfaces.d/$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.up.bash <<_EOF
+  if [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_DHCP" ]; then
+    print_color white debug DHCP 자동시작 스크립트를 추가합니다.
+    cat >> $VAR_LOCAL_WORKINGDIR/supporter/interfaces.d/$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.up.bash <<_EOF
 systemctl stop dhcpd > /dev/null 2>&1
 systemctl start dhcpd
 _EOF
+  fi
+
+  if [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_RADVD" ]; then
+    print_color white debug RADVD 자동시작 스크립트를 추가합니다.
+    cat >> $VAR_LOCAL_WORKINGDIR/supporter/interfaces.d/$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.up.bash <<_EOF
+systemctl stop radvd > /dev/null 2>&1
+systemctl start radvd
+_EOF
+  fi
 }
+
 install_dhcp6_server () { 
-  return
+  run_without_print yum install -y radvd
+  if (( $? )); then
+    print_color red RADVD 서버 설치에 실패했어요
+    exit 1
+  fi
 }
+
+configure_dhcp6_server () {
+  print_color cyan RADVD 서버를 구성합니다.
+  cat > /etc/radvd.conf <<_EOF
+interface tap_${VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME}
+{
+	AdvSendAdvert on;
+	prefix $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_NETWORK/$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_MASKBIT {};
+	route $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_LOCALADDRESS/64 {};
+	RDNSS $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_RADVD_DNS1 {};
+	RDNSS $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_RADVD_DNS2 {};
+};
+_EOF
+}
+
+restart_dhcp6_server () {
+  run_without_print systemctl stop radvd
+  run_without_print systemctl start radvd
+  if (( $? )); then
+    print_color red RADVD 서버 실행 완료
+  else
+    print_color red RADVD 서버 실행 실패
+  fi
+}
+
 check_firewall () {
   # Centos
   if `systemctl is-active firewalld >/dev/null 2>&1`; then
     print_color red firewalld가 실행중이에요.
   fi
 }
+
 append_allow_firewall_on_interface_script () {
   if `systemctl is-active firewalld >/dev/null 2>&1`; then
     print_color red firewalld가 실행중이에요.
@@ -175,17 +221,29 @@ _EOF
     fi
 
     if [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NAT" ]; then 
-print_color white - firewalld 를 위한 허용 스크립트를 추가합니다.
+print_color white - firewalld 를 위한 nat 허용 스크립트를 추가합니다.
       cat >> $VAR_LOCAL_WORKINGDIR/supporter/interfaces.d/$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.up.bash <<_EOF
 firewall-cmd --direct --add-rule ipv4 nat POSTROUTING 0 -s $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NETWORK/$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_MASKBIT -o $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NAT_MASQUERADE_OUTINTERFACE -j MASQUERADE
-firewall-cmd --direct --add-rule ipv4 filter FORWARD 0 -i tap_${VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME} -o $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NAT_MASQUERADE_OUTINTERFACE -j ACCEPT
-firewall-cmd --direct --add-rule ipv4 filter FORWARD 0 -i tap_${VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME} -o $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NAT_MASQUERADE_OUTINTERFACE -m state --state RELATED,ESTABLISHED -j ACCEPT
+firewall-cmd --direct --add-rule ipv4 filter FORWARD 0 -i \$1 -o $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NAT_MASQUERADE_OUTINTERFACE -j ACCEPT
+firewall-cmd --direct --add-rule ipv4 filter FORWARD 0 -i \$1 -o $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NAT_MASQUERADE_OUTINTERFACE -m state --state RELATED,ESTABLISHED -j ACCEPT
+_EOF
+    fi
+
+    # IPv6 Firewall
+    # ...
+    if [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_NAT" ]; then 
+print_color white - firewalld 를 위한 nat v6 허용 스크립트를 추가합니다.
+      cat >> $VAR_LOCAL_WORKINGDIR/supporter/interfaces.d/$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.up.bash <<_EOF
+firewall-cmd --direct --add-rule ipv6 nat POSTROUTING 0 -s $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_NETWORK/$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_MASKBIT -o $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_NAT_MASQUERADE_OUTINTERFACE -j MASQUERADE
+firewall-cmd --direct --add-rule ipv6 filter FORWARD 0 -i \$1 -o $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_NAT_MASQUERADE_OUTINTERFACE -j ACCEPT
+firewall-cmd --direct --add-rule ipv6 filter FORWARD 0 -i \$1 -o $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_NAT_MASQUERADE_OUTINTERFACE -m state --state RELATED,ESTABLISHED -j ACCEPT
 _EOF
     fi
 
   fi
 
 }
+
 install_iptables () {
   run_without_print yum install -y iptables
   if (( $? )); then

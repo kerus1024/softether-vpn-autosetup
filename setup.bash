@@ -152,10 +152,10 @@ configure_dhcp_server
 if [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_ENABLE" ]; then
   print_color cyan RADVD 서버 설치를 시작합니다.
 
-  if [ "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_MASKBIT" != "64" ];
+  if [ "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_MASKBIT" != "64" ]; then
     print_color red IPv6 64 비트 prefix만 지원합니다.
     exit 1
-  then
+  fi
 
   install_dhcp6_server
   configure_dhcp6_server
@@ -354,7 +354,7 @@ if [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_ENABLE" ]; then
   run_without_print sysctl -w net.ipv6.conf.all.forwarding=1
   cat > /etc/sysctl.d/99-ip6-forward.conf <<_EOF
 sysctl -w net.ipv6.conf.all.forwarding=1
-_EOF 
+_EOF
 fi
 
 # supporter 설치
@@ -390,11 +390,11 @@ if [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NAT" ]; then
   print_color white debug - IPv4 NAT 설정 up 스크립트를 생성합니다.
   cat >> $VAR_LOCAL_WORKINGDIR/supporter/interfaces.d/$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.up.bash <<_EOF
 ip addr add $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_LOCALADDRESS/$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_MASKBIT dev \$1
-iptables -D FORWARD -i tap_${VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME} -m state --state ESTABLISHED,RELATED -j ACCEPT 2> /dev/null
-iptables -D FORWARD -i tap_${VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME} -j ACCEPT 2> /dev/null
+iptables -D FORWARD -i \$1 -m state --state ESTABLISHED,RELATED -j ACCEPT 2> /dev/null
+iptables -D FORWARD -i \$1 -j ACCEPT 2> /dev/null
 iptables -t nat -D POSTROUTING -s $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NETWORK/$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_MASKBIT -o $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NAT_MASQUERADE_OUTINTERFACE -j MASQUERADE 2> /dev/null
-iptables -A FORWARD -i tap_${VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME} -m state --state ESTABLISHED,RELATED -j ACCEPT
-iptables -A FORWARD -i tap_${VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME} -j ACCEPT
+iptables -A FORWARD -i \$1 -m state --state ESTABLISHED,RELATED -j ACCEPT
+iptables -A FORWARD -i \$1 -j ACCEPT
 iptables -t nat -A POSTROUTING -s $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NETWORK/$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_MASKBIT -o $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NAT_MASQUERADE_OUTINTERFACE -j MASQUERADE
 _EOF
 fi
@@ -404,18 +404,18 @@ if [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_NAT" ]; then
   cat >> $VAR_LOCAL_WORKINGDIR/supporter/interfaces.d/$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.up.bash <<_EOF
 sysctl -w net.ipv6.conf.all.forwarding=1
 sysctl -w net.ipv6.conf.default.forwarding=0
-sysctl -w net.ipv6.conf.$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.disable_ipv6=0
-sysctl -w net.ipv6.conf.$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.use_tempaddr=0
-sysctl -w net.ipv6.conf.$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.forwarding=1
-sysctl -w net.ipv6.conf.$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.accept_ra=0
-sysctl -w net.ipv6.conf.$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.autoconf=0
-sysctl -w net.ipv6.conf.$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.accept_redirects=0
+sysctl -w net.ipv6.conf.\$1.disable_ipv6=0
+sysctl -w net.ipv6.conf.\$1.use_tempaddr=0
+sysctl -w net.ipv6.conf.\$1.forwarding=1
+sysctl -w net.ipv6.conf.\$1.accept_ra=0
+sysctl -w net.ipv6.conf.\$1.autoconf=0
+sysctl -w net.ipv6.conf.\$1.accept_redirects=0
 ip -6 addr add $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_LOCALADDRESS/$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_MASKBIT dev \$1
-ip6tables -D FORWARD -i tap_${VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME} -m state --state ESTABLISHED,RELATED -j ACCEPT 2> /dev/null
-ip6tables -D FORWARD -i tap_${VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME} -j ACCEPT 2> /dev/null
+ip6tables -D FORWARD -i \$1 -m state --state ESTABLISHED,RELATED -j ACCEPT 2> /dev/null
+ip6tables -D FORWARD -i \$1 -j ACCEPT 2> /dev/null
 ip6tables -t nat -D POSTROUTING -s $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_NETWORK/$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_MASKBIT -o $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_NAT_MASQUERADE_OUTINTERFACE -j MASQUERADE 2> /dev/null
-ip6tables -A FORWARD -i tap_${VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME} -m state --state ESTABLISHED,RELATED -j ACCEPT
-ip6tables -A FORWARD -i tap_${VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME} -j ACCEPT
+ip6tables -A FORWARD -i \$1 -m state --state ESTABLISHED,RELATED -j ACCEPT
+ip6tables -A FORWARD -i \$1 -j ACCEPT
 ip6tables -t nat -A POSTROUTING -s $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_NETWORK/$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_MASKBIT -o $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_NAT_MASQUERADE_OUTINTERFACE -j MASQUERADE
 _EOF
 fi
@@ -427,8 +427,8 @@ cat > $VAR_LOCAL_WORKINGDIR/supporter/interfaces.d/$VAR_LOCAL_SEVPN_FIRSTHUB_TAP
 if [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NAT" ]; then
   print_color white debug - IPv4 NAT 설정 down 스크립트를 생성합니다.
   cat >> $VAR_LOCAL_WORKINGDIR/supporter/interfaces.d/$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.down.bash <<_EOF 
-iptables -D FORWARD -i tap_${VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME} -m state --state ESTABLISHED,RELATED -j ACCEPT 2> /dev/null
-iptables -D FORWARD -i tap_${VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME} -j ACCEPT 2> /dev/null
+iptables -D FORWARD -i \$1 -m state --state ESTABLISHED,RELATED -j ACCEPT 2> /dev/null
+iptables -D FORWARD -i \$1 -j ACCEPT 2> /dev/null
 iptables -t nat -D POSTROUTING -s $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NETWORK/$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_MASKBIT -o $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NAT_MASQUERADE_OUTINTERFACE -j MASQUERADE 2> /dev/null
 _EOF
 fi
@@ -436,8 +436,8 @@ fi
 if [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_NAT" ]; then
   print_color white debug - IPv6 NAT 설정 down 스크립트를 생성합니다.
   cat >> $VAR_LOCAL_WORKINGDIR/supporter/interfaces.d/$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.down.bash <<_EOF 
-ip6tables -D FORWARD -i tap_${VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME} -m state --state ESTABLISHED,RELATED -j ACCEPT 2> /dev/null
-ip6tables -D FORWARD -i tap_${VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME} -j ACCEPT 2> /dev/null
+ip6tables -D FORWARD -i \$1 -m state --state ESTABLISHED,RELATED -j ACCEPT 2> /dev/null
+ip6tables -D FORWARD -i \$1 -j ACCEPT 2> /dev/null
 ip6tables -t nat -D POSTROUTING -s $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_NETWORK/$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_MASKBIT -o $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_NAT_MASQUERADE_OUTINTERFACE -j MASQUERADE 2> /dev/null
 _EOF
 fi
