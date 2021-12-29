@@ -83,21 +83,52 @@ restart_dhcp_server () {
 }
 
 append_run_dhcp_on_interface_script () {
+  print_color debug white DHCP 서버 자동시작 스크립트를 추가합니다.
   cat >> $VAR_LOCAL_WORKINGDIR/supporter/interfaces.d/$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.up.bash <<_EOF
 systemctl stop isc-dhcp-server > /dev/null 2>&1
 systemctl start isc-dhcp-server
 _EOF
+
+  if [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_RADVD" ]; then
+    print_color debug white RADVD 자동시작 스크립트를 추가합니다.
+    cat >> $VAR_LOCAL_WORKINGDIR/supporter/interfaces.d/$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.up.bash <<_EOF
+systemctl stop radvd > /dev/null 2>&1
+systemctl start radvd
+_EOF
+  fi
+
 }
 
 install_dhcp6_server () {
-  # IPv6
-  return
+  run_without_print apt-get install -y radvd
+  if (( $? )); then
+    print_color red RADVD 서버 설치에 실패했어요
+    exit 1
+  fi
 }
+
 configure_dhcp6_server () {
-  return
+  print_color cyan RADVD 서버를 구성합니다.
+  cat > /etc/radvd.conf <<_EOF
+interface tap_${VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME}
+{
+	AdvSendAdvert on;
+	prefix $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_NETWORK/$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_MASKBIT {};
+	route $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_LOCALADDRESS/64 {};
+	RDNSS $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_RADVD_DNS1 {};
+	RDNSS $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_RADVD_DNS2 {};
+};
+_EOF
 }
+
 restart_dhcp6_server () {
-  return
+  run_without_print systemctl stop radvd
+  run_without_print systemctl start radvd
+  if (( $? )); then
+    print_color red RADVD 서버 실행 완료
+  else
+    print_color red RADVD 서버 실행 실패
+  fi
 }
 check_firewall () {
   return
