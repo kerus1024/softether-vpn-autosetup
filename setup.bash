@@ -3,6 +3,8 @@ source ./lib/common.bash
 print_clear
 
 VAR_LOCAL_SEVPN_TCP_DEFAULT_PORT=5555
+VAR_LOCAL_NAT4_MASQUERADE_OUTINTERFACE=
+VAR_LOCAL_NAT6_MASQUERADE_OUTINTERFACE=
 VAR_LOCAL_INCLUDE_ENV=
 check_distro () {
 
@@ -75,7 +77,60 @@ check_iptables () {
   return
 }
 
-# https://www.hpc.mil/program-areas/networking-overview/2013-10-03-17-24-38/ipv6-knowledge-base-ip-transport/enabling-ipv6-in-debian-and-ubuntu-linux
+# NAT을 위한 기본 인터페이스 확인
+check_interface () {
+  default_mark='auto-detect'
+
+  # NATv4 확인
+  if [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_ENABLE" ] && [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NAT" ]; then
+    if [ "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NAT_MASQUERADE_OUTINTERFACE" = "$default_mark" ]; then 
+      print_color cyan NATv4를 위한 기본 인터페이스를 찾습니다.
+      default_interface4=`ip -4 route show | grep -Po -e '^default[^\^]+dev\s\K[^\s]+' 2>/dev/null`
+      if (( $? )) || [ -z "$default_interface4" ]; then
+        print_color red 기본 IPv4 라우트를 찾지 못했습니다.
+        exit 1
+      fi
+      VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NAT_MASQUERADE_OUTINTERFACE=$default_interface4
+    fi
+  
+    determine_ipaddress4=`ip -4 addr show $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NAT_MASQUERADE_OUTINTERFACE | grep 'scope global' | grep -Po '(?<=inet )[^\s\/]+' 2>/dev/null`
+    if (( $? )) || [ -z "$determine_ipaddress4" ]; then
+      print_color red 기본 IPv4 주소를 찾지 못했습니다.
+      exit 1
+    fi
+    print_color white inline 감지한 인터페이스
+    print_color cyan inline $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NAT_MASQUERADE_OUTINTERFACE
+    print_color yellow inline $determine_ipaddress4
+    echo
+    sleep 1
+  fi
+
+  # NATv6 확인
+  if [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_ENABLE" ] && [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_NAT" ]; then
+    if [ "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_NAT_MASQUERADE_OUTINTERFACE" = "$default_mark" ]; then 
+      print_color cyan NATv6를 위한 기본 인터페이스를 찾습니다.
+      default_interface6=`ip -6 route show | grep -Po -e '^default[^\^]+dev\s\K[^\s]+' 2>/dev/null`
+      if (( $? )) || [ -z "$default_interface6" ]; then
+        print_color red 기본 IPv6 라우트를 찾지 못했습니다.
+        exit 1
+      fi
+      VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_NAT_MASQUERADE_OUTINTERFACE=$default_interface6
+    fi
+  
+    determine_ipaddress6=`ip -6 addr show $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_NAT_MASQUERADE_OUTINTERFACE | grep 'scope global' | grep -Po '(?<=inet6 )[^\s\/]+' 2>/dev/null`
+    if (( $? )) || [ -z "$determine_ipaddress6" ]; then
+      print_color red 기본 IPv6 주소를 찾지 못했습니다.
+      exit 1
+    fi
+    print_color white inline 감지한 인터페이스
+    print_color cyan inline $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_NAT_MASQUERADE_OUTINTERFACE
+    print_color yellow inline $determine_ipaddress6
+    echo
+    sleep 1
+  fi
+
+}
+
 
 echo '
 
@@ -130,6 +185,9 @@ check_firewall
 print_color cyan 의존성 소프트웨어 설치를 시작합니다.
 install_dependencies
 
+# NAT을 위한 기본 인터페이스 확인
+check_interface
+
 # 사용 중인 TCP, UDP 포트 검사
 print_color cyan 시스템에 사용 가능한 TCP, UDP 포트를 확인합니다.
 check_listener
@@ -139,17 +197,19 @@ print_color cyan 시스템의 iptables 툴을 확인합니다.
 check_iptables
 
 # DHCP 서버 설치 및 DHCP4 서버 설정
-print_color cyan DHCP 서버 설치를 시작합니다.
-if [ -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_DHCP" ] || [ -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_DHCP_DNS" ] || [ -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NAT" ]; then
-  print_color red 미지원: 현재 DHCP+NAT을 통한 설정만 지원합니다.
-  exit 1
+if [ -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_ENABLE" ] && [ -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_DHCP" ]; then
+  print_color cyan DHCP 서버 설치를 시작합니다.
+  if [ -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_DHCP" ] || [ -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_DHCP_DNS" ] || [ -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NAT" ]; then
+    print_color red 미지원: 현재 DHCP+NAT을 통한 설정만 지원합니다.
+    exit 1
+  fi
+  install_dhcp_server
+  configure_dhcp_server
+  #restart_dhcp_server: 인터페이스 family 활성화 되기 전 까진 서비스가 fault됨.
 fi
-install_dhcp_server
-configure_dhcp_server
-#restart_dhcp_server: 인터페이스 family 활성화 되기 전 까진 서비스가 fault됨.
 
 # DHCP6 (RADVD RA) 설치 및 서버 설정
-if [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_ENABLE" ]; then
+if [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_ENABLE" ] && [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_RADVD" ]; then
   print_color cyan RADVD 서버 설치를 시작합니다.
 
   if [ "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_MASKBIT" != "64" ]; then
@@ -370,23 +430,20 @@ fi
 
 find $VAR_LOCAL_WORKINGDIR/supporter/ -name '*.bash' -exec chmod 700 {} \;
 
-if [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NAT_SNAT_IPADDRESS" ]; then
-  print_color red 미지원
-  exit 1
-fi
-
 # ifup
 rm -f $VAR_LOCAL_WORKINGDIR/supporter/interfaces.d/$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.up.bash
 cat > $VAR_LOCAL_WORKINGDIR/supporter/interfaces.d/$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.up.bash <<< '#!/bin/bash'
-cat >> $VAR_LOCAL_WORKINGDIR/supporter/interfaces.d/$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.up.bash <<_EOF 
+if [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_ENABLE" ]; then
+  cat >> $VAR_LOCAL_WORKINGDIR/supporter/interfaces.d/$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.up.bash <<_EOF 
 sysctl -w net.ipv6.conf.\$1.disable_ipv6=1
 sysctl -w net.ipv6.conf.\$1.use_tempaddr=0
 sysctl -w net.ipv6.conf.\$1.forwarding=0
 sysctl -w net.ipv6.conf.\$1.accept_ra=0
 sysctl -w net.ipv6.conf.\$1.autoconf=0
 _EOF
+fi
 
-if [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NAT" ]; then
+if [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_ENABLE" ] && [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NAT" ]; then
   print_color white debug - IPv4 NAT 설정 up 스크립트를 생성합니다.
   cat >> $VAR_LOCAL_WORKINGDIR/supporter/interfaces.d/$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.up.bash <<_EOF
 ip addr add $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_LOCALADDRESS/$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_MASKBIT dev \$1
@@ -399,7 +456,7 @@ iptables -t nat -A POSTROUTING -s $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NETWORK/$VA
 _EOF
 fi
 
-if [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_NAT" ]; then
+if [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_ENABLE" ] && [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_NAT" ]; then
   print_color white debug - IPv6 NAT 설정 up 스크립트를 생성합니다.
   cat >> $VAR_LOCAL_WORKINGDIR/supporter/interfaces.d/$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.up.bash <<_EOF
 sysctl -w net.ipv6.conf.all.forwarding=1
@@ -424,7 +481,7 @@ fi
 rm -f $VAR_LOCAL_WORKINGDIR/supporter/interfaces.d/$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.down.bash
 cat > $VAR_LOCAL_WORKINGDIR/supporter/interfaces.d/$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.down.bash <<< '#!/bin/bash'
 
-if [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NAT" ]; then
+if [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_ENABLE" ] && [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NAT" ]; then
   print_color white debug - IPv4 NAT 설정 down 스크립트를 생성합니다.
   cat >> $VAR_LOCAL_WORKINGDIR/supporter/interfaces.d/$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.down.bash <<_EOF 
 iptables -D FORWARD -i \$1 -m state --state ESTABLISHED,RELATED -j ACCEPT 2> /dev/null
@@ -433,7 +490,7 @@ iptables -t nat -D POSTROUTING -s $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NETWORK/$VA
 _EOF
 fi
 
-if [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_NAT" ]; then
+if [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_ENABLE" ] && [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_NAT" ]; then
   print_color white debug - IPv6 NAT 설정 down 스크립트를 생성합니다.
   cat >> $VAR_LOCAL_WORKINGDIR/supporter/interfaces.d/$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.down.bash <<_EOF 
 ip6tables -D FORWARD -i \$1 -m state --state ESTABLISHED,RELATED -j ACCEPT 2> /dev/null
@@ -496,15 +553,13 @@ run_without_print systemctl enable vpnserver.service vpnserver-supporter.service
 
 sleep 5
 # DHCP서버 올라올때까지 시간이 걸린다.
-if `systemctl is-active $VAR_LOCAL_ENV_DHCPD_SERVICE >/dev/null 2>&1`; then
-  print_color green DHCP 서버가 정상적으로 실행중입니다.
-else
-  print_color red DHCP 서버가 정상적으로 실행되고 있지 않습니다.
+if [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_ENABLE" ] && [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_DHCP" ]; then
+  if `systemctl is-active $VAR_LOCAL_ENV_DHCPD_SERVICE >/dev/null 2>&1`; then
+    print_color green DHCP 서버가 정상적으로 실행중입니다.
+  else
+    print_color red DHCP 서버가 정상적으로 실행되고 있지 않습니다.
+  fi
 fi
-
 # 마무리
-echo '
-
-
-'
+echo
 print_color white 설치가 완료되었습니다.

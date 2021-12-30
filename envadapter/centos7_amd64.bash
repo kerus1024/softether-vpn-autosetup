@@ -125,7 +125,7 @@ restart_dhcp_server () {
 }
 
 append_run_dhcp_on_interface_script () {
-  if [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_DHCP" ]; then
+  if [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_ENABLE" ] && [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_DHCP" ]; then
     print_color white debug DHCP 자동시작 스크립트를 추가합니다.
     cat >> $VAR_LOCAL_WORKINGDIR/supporter/interfaces.d/$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.up.bash <<_EOF
 systemctl stop dhcpd > /dev/null 2>&1
@@ -133,7 +133,7 @@ systemctl start dhcpd
 _EOF
   fi
 
-  if [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_RADVD" ]; then
+  if [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_ENABLE" ] && [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_RADVD" ]; then
     print_color white debug RADVD 자동시작 스크립트를 추가합니다.
     cat >> $VAR_LOCAL_WORKINGDIR/supporter/interfaces.d/$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.up.bash <<_EOF
 systemctl stop radvd > /dev/null 2>&1
@@ -229,8 +229,6 @@ firewall-cmd --direct --add-rule ipv4 filter FORWARD 0 -i \$1 -o $VAR_LOCAL_SEVP
 _EOF
     fi
 
-    # IPv6 Firewall
-    # ...
     if [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_NAT" ]; then 
 print_color white - firewalld 를 위한 nat v6 허용 스크립트를 추가합니다.
       cat >> $VAR_LOCAL_WORKINGDIR/supporter/interfaces.d/$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.up.bash <<_EOF

@@ -263,4 +263,3 @@ is_shell_safe_text () {
 get_shell_safe_text () {
   echo ${1@Q}
 }
-

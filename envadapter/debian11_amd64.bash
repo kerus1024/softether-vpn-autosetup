@@ -83,7 +83,7 @@ restart_dhcp_server () {
 }
 
 append_run_dhcp_on_interface_script () {
-  if [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_DHCP" ]; then
+  if [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_ENABLE" ] && [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_DHCP" ]; then
     print_color white debug DHCP 자동시작 스크립트를 추가합니다.
     print_color white debug DHCP 서버 자동시작 스크립트를 추가합니다.
     cat >> $VAR_LOCAL_WORKINGDIR/supporter/interfaces.d/$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.up.bash <<_EOF
@@ -92,7 +92,7 @@ systemctl start isc-dhcp-server
 _EOF
   fi
 
-  if [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_RADVD" ]; then
+  if [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_ENABLE" ] && [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_RADVD" ]; then
     print_color white debug RADVD 자동시작 스크립트를 추가합니다.
     cat >> $VAR_LOCAL_WORKINGDIR/supporter/interfaces.d/$VAR_LOCAL_SEVPN_FIRSTHUB_TAPNAME.up.bash <<_EOF
 systemctl stop radvd > /dev/null 2>&1
