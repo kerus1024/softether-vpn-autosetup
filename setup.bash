@@ -366,8 +366,12 @@ if [ ! -z "$VAR_LOCAL_SEVPN_L2TPIPSEC" ]; then
   print_color white + L2TP/IPSEC을 활성화 합니다.
   run_without_print $vpncmd /cmd IPsecEnable /L2TP:yes /L2TPRAW:no /ETHERIP:no /PSK:$VAR_LOCAL_SEVPN_L2TPIPSEC_PRESHAREDKEY /DEFAULTHUB:$VAR_LOCAL_SEVPN_FIRSTHUB_NAME || (( exit_count++ ));
 fi
-run_without_print $vpncmd /adminhub:$VAR_LOCAL_SEVPN_FIRSTHUB_NAME /cmd UserCreate $VAR_LOCAL_SEVPN_FIRSTHUB_FIRSTVPNUSER /GROUP:none /REALNAME:none /NOTE:none || (( exit_count++ ));
-run_without_print $vpncmd /adminhub:$VAR_LOCAL_SEVPN_FIRSTHUB_NAME /cmd UserPasswordSet $VAR_LOCAL_SEVPN_FIRSTHUB_FIRSTVPNUSER /PASSWORD:$VAR_LOCAL_SEVPN_FIRSTHUB_FIRSTVPNUSERPASSWORD || (( exit_count++ ));
+
+if [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_CREATE_FIRSTVPNUSER" ]; then
+  print_color white + 신규 계정을 생성 합니다.
+  run_without_print $vpncmd /adminhub:$VAR_LOCAL_SEVPN_FIRSTHUB_NAME /cmd UserCreate $VAR_LOCAL_SEVPN_FIRSTHUB_FIRSTVPNUSER /GROUP:none /REALNAME:none /NOTE:none || (( exit_count++ ));
+  run_without_print $vpncmd /adminhub:$VAR_LOCAL_SEVPN_FIRSTHUB_NAME /cmd UserPasswordSet $VAR_LOCAL_SEVPN_FIRSTHUB_FIRSTVPNUSER /PASSWORD:$VAR_LOCAL_SEVPN_FIRSTHUB_FIRSTVPNUSERPASSWORD || (( exit_count++ ));
+fi
 
 # 시큐리티 로그 주기 변경
 run_without_print $vpncmd /adminhub:$VAR_LOCAL_SEVPN_FIRSTHUB_NAME /cmd LogSwitchSet security /SWITCH:month || (( exit_count++ ));
