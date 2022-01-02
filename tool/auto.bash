@@ -294,12 +294,12 @@ set -- "${POSITIONAL_ARGS[@]}" # restore positional parameters
 
 if `command -v apt &> /dev/null`; then
   echo "APT 패키지 설치"
-  `apt update -y && apt install -y curl tar sudo >/dev/null 2>&1`
+  _=`apt-get update -y && apt-get install -y curl tar sudo > /dev/null 2>&1`
 fi
 
 if `command -v yum &> /dev/null`; then
   echo "YUM 패키지 설치"
-  `yum update -y && yum install -y curl tar sudo >/dev/null 2>&1`
+  _=`yum update -y && yum install -y curl tar sudo > /dev/null 2>&1`
 fi
 
 echo "GIT 설치 패키지 다운로드"
