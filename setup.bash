@@ -423,7 +423,8 @@ fi
 
 # supporter 설치
 print_color cyan SEVPN Supporter를 설치합니다.
-mkdir -p $VAR_LOCAL_WORKINGDIR/supporter
+#mkdir -p $VAR_LOCAL_WORKINGDIR/supporter
+mkdir -p $VAR_LOCAL_WORKINGDIR/supporter/interfaces.d
 mkdir -p $VAR_LOCAL_WORKINGDIR/lib
 cp -r $VAR_LOCAL_SCRIPT_WORKINGDIR/supporter/* $VAR_LOCAL_WORKINGDIR/supporter
 cp -r $VAR_LOCAL_SCRIPT_WORKINGDIR/lib/* $VAR_LOCAL_WORKINGDIR/lib
