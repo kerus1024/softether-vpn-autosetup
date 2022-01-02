@@ -197,7 +197,7 @@ print_color cyan 시스템의 iptables 툴을 확인합니다.
 check_iptables
 
 # DHCP 서버 설치 및 DHCP4 서버 설정
-if [ -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_ENABLE" ] && [ -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_DHCP" ]; then
+if [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_ENABLE" ] && [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_DHCP" ]; then
   print_color cyan DHCP 서버 설치를 시작합니다.
   if [ -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_DHCP" ] || [ -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_DHCP_DNS" ] || [ -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NAT" ]; then
     print_color red 미지원: 현재 DHCP+NAT을 통한 설정만 지원합니다.
