@@ -146,7 +146,7 @@ else
   exit 1
 fi 
 
-if ! is_shell_safe_text $VAR_LOCAL_SEVPN_ADMINPASSWORD || ! is_shell_safe_text $VAR_LOCAL_SEVPN_FIRSTHUB_FIRSTVPNUSERPASSWORD; then
+if ! is_shell_safe_text $VAR_LOCAL_SEVPN_ADMINPASSWORD || [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_CREATE_FIRSTVPNUSER" ] && ! is_shell_safe_text $VAR_LOCAL_SEVPN_FIRSTHUB_FIRSTVPNUSERPASSWORD; then
   print_color red 사용 불가능한 패스워드에요.
   exit 1
 fi

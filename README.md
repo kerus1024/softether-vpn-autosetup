@@ -14,7 +14,8 @@
 - 단일 VPN 사용자 계정 자동 추가
 
 ## TO-DO
-- 쉘 커맨드를 통한 응답 파일 구성
+- NATv6이 아닌 IPv6 서브네팅 된 라우트 설정
+- 스플릿 터널링와 같은 특수 목적을 위한 DHCP/RADVD 게이트웨이 알림 비활성화
 - 리눅스 TAP 장치가 아닌 물리 인터페이스와 브릿지 된 Virtual Hub 구성
 
 ## 지원 되는 리눅스 배포판
@@ -31,20 +32,14 @@
 |CentOS|7|x86_64|
 
 ## 설치 방법
-
 ```bash
 git clone -b master https://github.com/kerus1024/softether-vpn-autosetup ./setupvpn
 cd setupvpn
 bash setup.bash
+
 ```
-
-또는
-
-```bash
-bash <(curl -s https://raw.githubusercontent.com/kerus1024/softether-vpn-autosetup/master/tool/auto.bash )
-```
-
-## 커맨드를 이용한 설치
+반드시 `response.env` 파일을 편집하세요
+### 커맨드를 이용한 설치
 - 서버 관련
 
 ```
@@ -75,7 +70,9 @@ bash <(curl -s https://raw.githubusercontent.com/kerus1024/softether-vpn-autoset
 --add-user-username <사용자명>       # 초기 사용자의 사용자명을 지정합니다.
 --add-user-password <패스워드>       # 초기 사용자의 비밀번호를 지정합니다.
 ```
+
 - IPv4 관련
+
 ```
 --no-enable-ipv4                       # 가상 TAP 인터페이스 장치의 IPv4 를 비활성화 합니다.
 --ipv4-network <네트워크ID>             # IPv4 네트워크 ID를 지정합니다: 기본값은 '10.255.255.0' 입니다.
@@ -158,7 +155,4 @@ https://raw.githubusercontent.com/SoftEtherVPN/SoftEtherVPN_Stable/master/WARNIN
 ...
 bool SiIsEnterpriseFunctionsRestrictedOnOpenSource(CEDAR *c)
 ```
-
-
-
 
