@@ -93,7 +93,7 @@ check_interface () {
       VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NAT_MASQUERADE_OUTINTERFACE=$default_interface4
     fi
   
-    determine_ipaddress4=`ip -4 addr show $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NAT_MASQUERADE_OUTINTERFACE | grep 'scope global' | grep -Po '(?<=inet )[^\s\/]+' 2>/dev/null`
+    determine_ipaddress4=`ip -4 addr show $VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK4_NAT_MASQUERADE_OUTINTERFACE | grep 'scope global' | grep -Po '(?<=inet )[^\s\/]+' | head -n 1 2>/dev/null`
     if (( $? )) || [ -z "$determine_ipaddress4" ]; then
       print_color red 기본 IPv4 주소를 찾지 못했습니다.
       exit 1
@@ -109,7 +109,7 @@ check_interface () {
   if [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_ENABLE" ] && [ ! -z "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_NAT" ]; then
     if [ "$VAR_LOCAL_SEVPN_FIRSTHUB_NETWORK6_NAT_MASQUERADE_OUTINTERFACE" = "$default_mark" ]; then 
       print_color cyan NATv6를 위한 기본 인터페이스를 찾습니다.
-      default_interface6=`ip -6 route show | grep -Po -e '^default[^\^]+dev\s\K[^\s]+' 2>/dev/null`
+      default_interface6=`ip -6 route show | grep -Po -e '^default[^\^]+dev\s\K[^\s]+' | head -n 1 2>/dev/null`
       if (( $? )) || [ -z "$default_interface6" ]; then
         print_color red 기본 IPv6 라우트를 찾지 못했습니다.
         exit 1

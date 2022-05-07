@@ -24,6 +24,7 @@
 |Debian|11|x86_64|
 |Debian|10|x86_64|
 |Debian|9|x86_64|
+|Ubuntu|LTS-22.04|x86_64|
 |Ubuntu|21.10|x86_64|
 |Ubuntu|21.04|x86_64|
 |Ubuntu|LTS-20.04|x86_64|
