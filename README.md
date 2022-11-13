@@ -17,6 +17,7 @@
 - NATv6이 아닌 IPv6 서브네팅 된 라우트 설정
 - 스플릿 터널링와 같은 특수 목적을 위한 DHCP/RADVD 게이트웨이 알림 비활성화
 - 리눅스 TAP 장치가 아닌 물리 인터페이스와 브릿지 된 Virtual Hub 구성
+- SetEnumDeny
 
 ## 지원 되는 리눅스 배포판
 |distro|version|arch|
