@@ -5,8 +5,8 @@ ENV_REMOTE_SOFTETHER_PACKAGE=
 set_remote_softether_package () {
   # https://github.com/SoftEtherVPN/SoftEtherVPN_Stable/releases/download/v4.38-9760-rtm/softether-vpnserver-v4.38-9760-rtm-2021.08.17-linux-x64-64bit.tar.gz
   basedir='https://github.com/SoftEtherVPN/SoftEtherVPN_Stable/releases/download'
-  version='v4.39-9772-beta'
-  releasedate='2022.04.26'
+  version='v4.41-9782-beta'
+  releasedate='2022.11.17'
   
   LINUX_INTEL86=$basedir/$version/softether-vpnserver-$version-$releasedate-linux-x86-32bit.tar.gz
   LINUX_AMD64=$basedir/$version/softether-vpnserver-$version-$releasedate-linux-x64-64bit.tar.gz
