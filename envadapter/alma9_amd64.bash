@@ -31,7 +31,7 @@ install_dependencies () {
     exit 1
   fi
 
-  run_without_print dnf group install -y "Developmet Tools"
+  run_without_print dnf group install -y "Development Tools"
   if (( $? )); then
     print_color red YUM 필수 의존성 설치에 실패했어요.
     exit 1
