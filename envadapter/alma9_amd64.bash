@@ -1,4 +1,3 @@
-
 #!/bin/bash
 VAR_LOCAL_ENV_OS=AlmaLinux
 VAR_LOCAL_ENV_CODENAME=9
